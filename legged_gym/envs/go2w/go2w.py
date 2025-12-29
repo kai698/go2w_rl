@@ -933,7 +933,13 @@ class Go2w(LeggedRobot):
         # Penalize difference between mirror joints
         mirror_err = torch.zeros(self.num_envs, device=self.device, requires_grad=False)
         for left_idx, right_idx in self.mirror_joint_indices:
-            diff = torch.square(self.dof_pos[:, left_idx] - self.dof_pos[:, right_idx])
+            if left_idx % 4 == 0 and right_idx % 4 == 0:    # hip joints
+                left = -self.dof_pos[:, left_idx]
+                right = self.dof_pos[:, right_idx]
+            else:
+                left = self.dof_pos[:, left_idx]
+                right = self.dof_pos[:, right_idx]
+            diff = torch.square(left - right)
             mirror_err += diff
         mirror_err *= 1 / len(self.mirror_joint_indices) if len(self.mirror_joint_indices) > 0 else 0.
         return mirror_err
